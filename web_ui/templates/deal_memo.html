@@ -1,0 +1,36 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deal Memo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-button">Back to Form</a>
+        <h1>Generated Deal Memo</h1>
+
+        <div class="indicators">
+            <div class="indicator-item">
+                <strong>Investment Recommendation:</strong>
+                <span class="status {{ recommendation.lower().replace(' ', '-') }}">
+                    {{ recommendation }}
+                </span>
+            </div>
+            <div class="indicator-item">
+                <strong>Financial Loss Risk:</strong>
+                <span class="status {{ loss_risk.lower().replace(' ', '-') }}">
+                    {{ loss_risk }}
+                </span>
+            </div>
+        </div>
+        
+        <pre>{{ deal_memo }}</pre>
+    </div>
+</body>
+</html>
+
