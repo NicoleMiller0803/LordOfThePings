@@ -66,3 +66,44 @@ def generate_property_overview(property_data):
         prev_sold_date=prop.get('prev_sold_date', 'Not Available')
     )
 
+def analyze_comparable_data(comparable_properties: pd.DataFrame, target_property_price: float) -> dict:
+    """
+    Analyzes comparable property data to determine a market value and assessment.
+
+    Args:
+        comparable_properties (pd.DataFrame): DataFrame containing comparable property data.
+        target_property_price (float): The listing price of the target property.
+
+    Returns:
+        dict: A dictionary containing the comparable market value and pricing assessment.
+    """
+    market_analysis = {
+        "comparable_market_value": "N/A",
+        "pricing_assessment": "Further analysis required to determine if the property is over, under, or fairly priced."
+    }
+
+    if comparable_properties is None or comparable_properties.empty:
+        market_analysis["comparable_market_value"] = "No comparable properties found."
+        market_analysis["pricing_assessment"] = "No comparable properties found to assess pricing."
+        return market_analysis
+
+    # Calculate the median listing price of comparable properties
+    comparable_prices = comparable_properties['price'].dropna()
+    if not comparable_prices.empty:
+        median_comp_price = comparable_prices.median()
+        market_analysis["comparable_market_value"] = f"${median_comp_price:,.2f}"
+
+        # Assess pricing relative to comparable properties
+        if target_property_price < median_comp_price * 0.9: # More than 10% below median
+            market_analysis["pricing_assessment"] = "Underpriced (more than 10% below comparable market value)."
+        elif target_property_price > median_comp_price * 1.1: # More than 10% above median
+            market_analysis["pricing_assessment"] = "Overpriced (more than 10% above comparable market value)."
+        elif target_property_price > median_comp_price * 0.95 and target_property_price < median_comp_price * 1.05: # Within 5%
+            market_analysis["pricing_assessment"] = "Fairly priced (within 5% of comparable market value)."
+        else:
+            market_analysis["pricing_assessment"] = "Reasonably priced (within 10% of comparable market value)."
+    else:
+        market_analysis["comparable_market_value"] = "Comparable properties found, but no valid prices to calculate market value."
+
+    return market_analysis
+

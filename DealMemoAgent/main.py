@@ -21,6 +21,10 @@ def main():
     parser.add_argument("--listing_status", type=str, required=True)
     parser.add_argument("--listing_price", type=float, required=True)
 
+    # Comparable Market Analysis
+    parser.add_argument("--comparable_market_value", type=str, required=True)
+    parser.add_argument("--pricing_assessment", type=str, required=True)
+
     # Flood & Insurance Risk Assessment
     parser.add_argument("--flood_availability", type=str, required=True)
     parser.add_argument("--flood_premium", type=float, required=True)
@@ -39,6 +43,7 @@ def main():
     memo = generate_deal_memo(
         args.property_type, args.location, args.street, args.lot_size, args.building_size, args.unit_config,
         args.listing_status, args.listing_price,
+        args.comparable_market_value, args.pricing_assessment,
         args.flood_availability, args.flood_premium,
         safmr_data,
         financial_losses_data

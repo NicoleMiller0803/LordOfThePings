@@ -5,31 +5,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deal Memo</title>
+    <title>CRE Analyzer Agent</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-button">Back to Form</a>
-        <h1>Generated Deal Memo</h1>
+        <a href="/" class="back-button">Back</a>
+        <h1>Deal Memo for {{ deal_memo_data.property_overview.street }}, {{ deal_memo_data.property_overview.location }}</h1>
 
         <div class="indicators">
             <div class="indicator-item">
                 <strong>Investment Recommendation:</strong>
-                <span class="status {{ recommendation.lower().replace(' ', '-') }}">
-                    {{ recommendation }}
+                <span class="status {{ deal_memo_data.investment_recommendation.status_color }}">
+                    {{ deal_memo_data.executive_summary.recommendation }}
                 </span>
             </div>
             <div class="indicator-item">
                 <strong>Financial Loss Risk:</strong>
-                <span class="status {{ loss_risk.lower().replace(' ', '-') }}">
-                    {{ loss_risk }}
+                <span class="status {{ deal_memo_data.financial_loss_risk.status_color }}">
+                    {{ deal_memo_data.financial_loss_risk.status }}
                 </span>
             </div>
         </div>
         
-        <pre>{{ deal_memo }}</pre>
+        <div class="deal-memo-content">
+            <section>
+                <h2>Executive Summary</h2>
+                <p>This memo provides a summary and recommendation for the potential acquisition of the property located at <strong>{{ deal_memo_data.executive_summary.location }}</strong>.</p>
+                <p>Based on the available data, the preliminary recommendation is to <strong>{{ deal_memo_data.executive_summary.recommendation }}</strong>.</p>
+                <p class="justification">{{ deal_memo_data.executive_summary.justification }}</p>
+            </section>
+
+            <section>
+                <h2>Property Overview</h2>
+                <ul>
+                    <li><strong>Property Type:</strong> {{ deal_memo_data.property_overview.property_type }}</li>
+                    <li><strong>Location:</strong> {{ deal_memo_data.property_overview.location }}</li>
+                    <li><strong>Street:</strong> {{ deal_memo_data.property_overview.street }}</li>
+                    <li><strong>Lot Size:</strong> {{ deal_memo_data.property_overview.lot_size }}</li>
+                    <li><strong>Building Size:</strong> {{ deal_memo_data.property_overview.building_size }}</li>
+                    <li><strong>Unit Configuration:</strong> {{ deal_memo_data.property_overview.unit_config }}</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Market & Pricing Analysis</h2>
+                <ul>
+                    <li><strong>Listing Price:</strong> ${{ deal_memo_data.market_pricing_analysis.listing_price | int | to_formatted_currency }}</li>
+                    <li><strong>Comparable Market Value:</strong> {{ deal_memo_data.market_pricing_analysis.comparable_market_value }}</li>
+                </ul>
+                <div class="risk-indicator-card">
+                    <h3>Pricing Assessment</h3>
+                    <p class="status-{{ deal_memo_data.market_pricing_analysis.pricing_assessment.lower().split(' ')[0] }}">
+                        <i class="fas {% if 'underpriced' in deal_memo_data.market_pricing_analysis.pricing_assessment.lower() %}fa-arrow-down{% elif 'overpriced' in deal_memo_data.market_pricing_analysis.pricing_assessment.lower() %}fa-arrow-up{% else %}fa-check-circle{% endif %}"></i>
+                        {{ deal_memo_data.market_pricing_analysis.pricing_assessment }}
+                    </p>
+                    <p class="description">This assessment compares the listing price to the median value of similar properties in the area.</p>
+                </div>
+                <h3>Small Area Fair Market Rents (SAFMR):</h3>
+                {% if deal_memo_data.market_pricing_analysis.safmr_data %}
+                    {% for record in deal_memo_data.market_pricing_analysis.safmr_data %}
+                        <ul>
+                            <li><strong>FMR for 1-Bedroom ({{ record.program_name }} {{ record.year }}):</strong> ${{ record.fmr_1_bedroom | int | to_formatted_currency }}</li>
+                            <li><strong>FMR for 2-Bedroom ({{ record.program_name }} {{ record.year }}):</strong> ${{ record.fmr_2_bedroom | int | to_formatted_currency }}</li>
+                            <li><strong>FMR for 3-Bedroom ({{ record.program_name }} {{ record.year }}):</strong> ${{ record.fmr_3_bedroom | int | to_formatted_currency }}</li>
+                            <li><strong>FMR for 4-Bedroom ({{ record.program_name }} {{ record.year }}):</strong> ${{ record.fmr_4_bedroom | int | to_formatted_currency }}</li>
+                        </ul>
+                    {% endfor %}
+                {% else %}
+                    <p>No SAFMR data available.</p>
+                {% endif %}
+            </section>
+
+            <section>
+                <h2>Flood & Insurance Risk Assessment</h2>
+                <ul>
+                    <li><strong>Estimated Annual Flood Premium:</strong> ${{ deal_memo_data.flood_insurance_risk_assessment.estimated_annual_premium | int | to_formatted_currency }}</li>
+                </ul>
+                <div class="risk-indicator-card">
+                    <h3>Insurance Availability</h3>
+                    <p class="status-{{ deal_memo_data.flood_insurance_risk_assessment.insurance_availability.lower().replace(' ', '-') }}">
+                        <i class="fas {% if 'high risk' in deal_memo_data.flood_insurance_risk_assessment.insurance_availability.lower() %}fa-exclamation-triangle{% elif 'not available' in deal_memo_data.flood_insurance_risk_assessment.insurance_availability.lower() %}fa-times-circle{% else %}fa-check-circle{% endif %}"></i>
+                        {{ deal_memo_data.flood_insurance_risk_assessment.insurance_availability }}
+                    </p>
+                    <p class="description">Indicates the general availability and risk level of flood insurance for this property.</p>
+                </div>
+            </section>
+
+            <section>
+                <h2>Mitigation Strategies</h2>
+                <h3>Flood Risk:</h3>
+                <p>{{ deal_memo_data.mitigation_strategies.flood_risk }}</p>
+                <div class="risk-indicator-card">
+                    <h3>State-Level Financial Loss Risk Trend</h3>
+                    <p class="status-{{ deal_memo_data.financial_loss_risk.status.lower() }}">
+                        <i class="fas {% if deal_memo_data.financial_loss_risk.status.lower() == 'high' %}fa-chart-line-down{% elif deal_memo_data.financial_loss_risk.status.lower() == 'low' %}fa-chart-line-up{% else %}fa-chart-line{% endif %}"></i>
+                        {{ deal_memo_data.financial_loss_risk.status }}
+                    </p>
+                    <p class="description">{{ deal_memo_data.financial_loss_risk.interpretation }}</p>
+                </div>
+            </section>
+        </div>
     </div>
 </body>
 </html>

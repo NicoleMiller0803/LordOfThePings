@@ -4,68 +4,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deal Memo Generator</title>
+    <title>CRE Analyzer Agent</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Deal Memo Generator</h1>
-        <form method="POST" id="deal-memo-form">
-            <div class="form-group">
-                <label for="street">Street:</label>
-                <input type="text" id="street" name="street" value="1265166.0" required>
-            </div>
-            <div class="form-group">
-                <label for="zip_code">Zip Code:</label>
-                <input type="text" id="zip_code" name="zip_code" value="79758" required>
-            </div>
-            <div class="form-group">
-                <label for="state">State:</label>
-                <input type="text" id="state" name="state" value="CALIFORNIA" required>
-            </div>
-            <div class="form-group">
-                <label for="coverage_type">Coverage Type:</label>
-                <input type="text" id="coverage_type" name="coverage_type" value="Building & Contents" required>
-            </div>
-            <button type="submit">Generate Deal Memo</button>
-        </form>
-        {% if error %}
-            <p class="error">{{ error }}</p>
-        {% endif %}
+    <div class="main-container">
+        <div class="header">
+            <h1 class="header-title">CRE Analyzer Agent</h1>
+            <p class="header-subtitle">Enter property details to get a comprehensive investment analysis.</p>
+        </div>
+        
+        <div class="form-card">
+            <form method="POST" id="deal-memo-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="street">Street Address</label>
+                        <input type="text" id="street" name="street" value="1265166.0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="zip_code">Zip Code</label>
+                        <input type="text" id="zip_code" name="zip_code" value="79758" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="state">State (e.g., CALIFORNIA)</label>
+                        <input type="text" id="state" name="state" value="CALIFORNIA" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="coverage_type">Coverage Type (e.g., Building & Contents)</label>
+                        <input type="text" id="coverage_type" name="coverage_type" value="Building & Contents" required>
+                    </div>
+                </div>
+                <button type="submit" class="submit-button">Generate Deal Memo</button>
+            </form>
+            {% if error %}
+                <p class="error-message">{{ error }}</p>
+            {% endif %}
+        </div>
     </div>
 
     <div id="loading-overlay" class="loading-overlay">
         <div class="spinner"></div>
-        <p>Generating Deal Memo...</p>
+        <p id="loading-text">Initializing...</p>
         <div class="timeline-title">Orchestration Workflow:</div>
         <div class="agent-timeline">
             <div class="timeline-line"></div>
             <div class="timeline-agents">
                 <div class="agent-step" id="step-property">
-                    <div class="agent-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="agent-icon"><i class="fas fa-home"></i></div>
                     <p class="agent-name">Property Intelligence Agent</p>
-                    <p class="agent-description">Gathering property details</p>
                 </div>
                 <div class="agent-step" id="step-flood">
                     <div class="agent-icon"><i class="fas fa-water"></i></div>
                     <p class="agent-name">Flood Risk Agent</p>
-                    <p class="agent-description">Assessing flood risk</p>
                 </div>
                 <div class="agent-step" id="step-safmr">
                     <div class="agent-icon"><i class="fas fa-chart-line"></i></div>
                     <p class="agent-name">Market Analyst Agent</p>
-                    <p class="agent-description">Analyzing market rents</p>
                 </div>
                 <div class="agent-step" id="step-financial">
                     <div class="agent-icon"><i class="fas fa-dollar-sign"></i></div>
                     <p class="agent-name">Financial Loss Analyst</p>
-                    <p class="agent-description">Evaluating financial losses</p>
                 </div>
                 <div class="agent-step" id="step-dealmemo">
                     <div class="agent-icon"><i class="fas fa-file-alt"></i></div>
                     <p class="agent-name">Deal Memo Generator</p>
-                    <p class="agent-description">Generating final memo</p>
                 </div>
             </div>
         </div>
@@ -74,12 +80,14 @@
     <script>
         document.getElementById('deal-memo-form').addEventListener('submit', function() {
             document.getElementById('loading-overlay').style.display = 'flex';
+            const loadingTextElement = document.getElementById('loading-text');
+
             const agentSteps = [
-                { id: 'step-property', delay: 500 },
-                { id: 'step-flood', delay: 1500 },
-                { id: 'step-safmr', delay: 2500 },
-                { id: 'step-financial', delay: 3500 },
-                { id: 'step-dealmemo', delay: 4500 }
+                { id: 'step-property', name: 'Property Intelligence Agent', description: 'Gathering property details...', delay: 1000 },
+                { id: 'step-flood', name: 'Flood Risk Agent', description: 'Assessing flood risk...', delay: 3000 },
+                { id: 'step-safmr', name: 'Market Analyst Agent', description: 'Analyzing market rents...', delay: 5000 },
+                { id: 'step-financial', name: 'Financial Loss Analyst', description: 'Evaluating financial losses...', delay: 7000 },
+                { id: 'step-dealmemo', name: 'Deal Memo Generator', description: 'Compiling final report...', delay: 9000 }
             ];
 
             agentSteps.forEach((step, index) => {
@@ -87,20 +95,23 @@
                     const element = document.getElementById(step.id);
                     if (element) {
                         element.querySelector('.agent-icon').classList.add('completed');
-                        // Remove active from previous agent
                         if (index > 0) {
                             const prevElement = document.getElementById(agentSteps[index - 1].id);
                             if (prevElement) {
                                 prevElement.querySelector('.agent-icon').classList.remove('active');
                             }
                         }
-                        // Add active to current agent if not the last one
                         if (index < agentSteps.length - 1) {
                             element.querySelector('.agent-icon').classList.add('active');
+                            loadingTextElement.textContent = step.description; // Update loading text
+                        } else {
+                            loadingTextElement.textContent = "Finalizing Deal Memo..."; // Final text for the last step
                         }
                     }
                 }, step.delay);
             });
+             // Set initial loading text
+            loadingTextElement.textContent = "Initializing Orchestration...";
         });
     </script>
 </body>
